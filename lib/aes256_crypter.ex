@@ -7,15 +7,15 @@ defmodule Aes256Crypter do
     Returns ciphertext that is encrypted with Aes 256 in CBC mode and encodeed with base64.
 
     ## Examples
-        iex> salt = Aes256Crypter.generate_salt(8)
+        iex> salt = <<1,2,3,4,5,6,7,8>>
         iex> Aes256Crypter.encryption("This is plaintext", "key", salt, 1000)
-        "BSrqQzyX3iQnOei6i65v0Plg11qP97OtlTMsEO7Dv3Y="
+        "6yw/4J05fMjPaWQFtSScCKGAhlvnyHle94qxs4fQDck="
     """
   def encryption(plaintext, secret_key, salt, iterations) do
     palinByte = pkcs7_pad(plaintext)
     originalPassword = :crypto.hash(:sha256, secret_key)
 
-    {ok, key_with_iv} = :pbkdf2.pbkdf2({:hmac, :sha}, originalPassword, salt, iterations, 48)
+    {_ok, key_with_iv} = :pbkdf2.pbkdf2({:hmac, :sha}, originalPassword, salt, iterations, 48)
 
     key = Kernel.binary_part(key_with_iv, 0, 32)
     iv = Kernel.binary_part(key_with_iv, 32, 16)
@@ -29,7 +29,8 @@ defmodule Aes256Crypter do
     Returns the Plaintext decrypted with Aes 256 in CBC mode.
 
     ## Examples
-        iex> Aes256Crypter.decryption("BSrqQzyX3iQnOei6i65v0Plg11qP97OtlTMsEO7Dv3Y=", "key", salt, 1000)
+        iex> salt = <<1,2,3,4,5,6,7,8>>
+        iex> Aes256Crypter.decryption("6yw/4J05fMjPaWQFtSScCKGAhlvnyHle94qxs4fQDck=", "key", salt, 1000)
         "This is plaintext"
     """
 
@@ -37,7 +38,7 @@ defmodule Aes256Crypter do
     cipherByte = Base.decode64!(ciphertext, mixed: true)
     originalPassword = :crypto.hash(:sha256, derivation_key)
 
-    {ok, key_with_iv} = :pbkdf2.pbkdf2({:hmac, :sha}, originalPassword, salt, iterations, 48)
+    {_ok, key_with_iv} = :pbkdf2.pbkdf2({:hmac, :sha}, originalPassword, salt, iterations, 48)
 
     key = Kernel.binary_part(key_with_iv, 0, 32)
     iv = Kernel.binary_part(key_with_iv, 32, 16)
@@ -81,10 +82,6 @@ defmodule Aes256Crypter do
 
   @doc """
     Returns the generated random secret key encoded with Base64.
-
-    ## Examples
-        iex> Aes256Crypter.generate_secret_key(32)
-        "Y3FRNo3MHOEKTc1D4aTThYJm6j5BDzMgO2ZDEz6Vfn4="
     """
   def generate_secret_key(key_size \\ 32) do
     if is_integer(key_size) do
@@ -96,10 +93,6 @@ defmodule Aes256Crypter do
 
   @doc """
     Returns the generated random salt in byte array.
-
-    ## Examples
-        iex> Aes256Crypter.generate_salt(8)
-        <<171, 72, 254, 74, 196, 116, 164, 40>>
     """
   def generate_salt(salt_size \\ 32) do
     if is_integer(salt_size) do
