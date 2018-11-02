@@ -1,10 +1,16 @@
 defmodule Aes256Crypter do
   @moduledoc """
-  Documentation for Aes256Crypter.
+  Aes 256 encryption/decryption using Key Derivation with salt implementation in Elixir.
   """
 
-  def encryption(plaintext, secret_key, salt, iterations)
+  @doc """
+    Returns ciphertext that is encrypted with Aes 256 in CBC mode and encodeed with base64.
 
+    ## Examples
+        iex> salt = Aes256Crypter.generate_salt(8)
+        iex> Aes256Crypter.encryption("This is plaintext", "key", salt, 1000)
+        "BSrqQzyX3iQnOei6i65v0Plg11qP97OtlTMsEO7Dv3Y="
+    """
   def encryption(plaintext, secret_key, salt, iterations) do
     palinByte = pkcs7_pad(plaintext)
     originalPassword = :crypto.hash(:sha256, secret_key)
@@ -19,11 +25,13 @@ defmodule Aes256Crypter do
 
   end
 
-  def decryption(ciphertext, derivation_key, salt, iterations)
+  @doc """
+    Returns the Plaintext decrypted with Aes 256 in CBC mode.
 
-  def decryption(ciphertext, derivation_key, nil, salt, iterations) do
-    raise "IV(initialization vector) is required to decrypt your ciphertext"
-  end
+    ## Examples
+        iex> Aes256Crypter.decryption("BSrqQzyX3iQnOei6i65v0Plg11qP97OtlTMsEO7Dv3Y=", "key", salt, 1000)
+        "This is plaintext"
+    """
 
   def decryption(ciphertext, derivation_key, salt, iterations) do
     cipherByte = Base.decode64!(ciphertext, mixed: true)
@@ -71,6 +79,13 @@ defmodule Aes256Crypter do
     end
   end
 
+  @doc """
+    Returns the generated random secret key encoded with Base64.
+
+    ## Examples
+        iex> Aes256Crypter.generate_secret_key(32)
+        "Y3FRNo3MHOEKTc1D4aTThYJm6j5BDzMgO2ZDEz6Vfn4="
+    """
   def generate_secret_key(key_size \\ 32) do
     if is_integer(key_size) do
       Base.encode64(:crypto.strong_rand_bytes(key_size))
@@ -79,6 +94,13 @@ defmodule Aes256Crypter do
     end
   end
 
+  @doc """
+    Returns the generated random salt in byte array.
+
+    ## Examples
+        iex> Aes256Crypter.generate_salt(8)
+        <<171, 72, 254, 74, 196, 116, 164, 40>>
+    """
   def generate_salt(salt_size \\ 32) do
     if is_integer(salt_size) do
       :crypto.strong_rand_bytes(salt_size)
