@@ -24,7 +24,7 @@ defmodule Aes256CrypterTest do
 
   test "#encryption 256bit key" do
     ciphertext = Aes256Crypter.encryption(plaintext_data(), key(), salt(), iterations())
-    assert ciphertext != plaintext_data()
+    assert ciphertext === ciphertext()
   end
 
   test "#decryption with 256bit key" do
